@@ -25,36 +25,44 @@ static u8 thread_stack2[STACK_SIZE];
 // Shared data
 static volatile int thread_running = 1;
 
+u64 time_start, time_end;
+
 typedef struct {
-    cJSON *frames;
+	cJSON **frame_ptrs;
     int frame_count;
 } StreamAsciiArgs;
 
-void streamAsciiThread(cJSON *frames, int frame_count) {
+void streamAsciiThread(cJSON **frame_ptrs, int frame_count) {
     
 	while(1){
+		
 		for (int i = 0; i < frame_count; i++) {
-			cJSON *frame = cJSON_GetArrayItem(frames, i);
+			cJSON *frame = frame_ptrs[i];
 
 			cJSON *frame_item = NULL;
 			cJSON_ArrayForEach(frame_item, frame) {
 				const char *value = cJSON_GetStringValue(frame_item);
+				printf("\x1b[33m");
+				printf("\x1b[3;0H");
 				printf("%s\n", value);
 				usleep(70000);
-				printf("\x1b[2J");
-				printf("\x1b[0;0H");
+				//printf("\x1b[2J"); // Clear screen
+				printf("\x1b[0;0H"); // Home Cursor
 			}
+
+			printf("\x1b[37m WiiChip       Copyright (c) nicode3141 2026\n");
+			WPAD_ScanPads();
+			u32 pressed = WPAD_ButtonsDown(0);
+
+			if ( pressed & WPAD_BUTTON_HOME ){
+				thread_running = 0; 
+				exit(0);
+			};
+
+			VIDEO_WaitVSync();
 		}
-
-		WPAD_ScanPads();
-		u32 pressed = WPAD_ButtonsDown(0);
-
-		if ( pressed & WPAD_BUTTON_HOME ){
-			thread_running = 0; 
-			exit(0);
-		};
-
-		VIDEO_WaitVSync();
+		
+		usleep(1);		
 	}
 
     return NULL;
@@ -75,11 +83,11 @@ int main(int argc, char **argv) {
 	ASND_Init();
 	MP3Player_Init();
 
-	rmode = &TVEurgb60Hz480IntDf;
+	rmode = VIDEO_GetPreferredMode(NULL); //&TVEurgb60Hz480IntDf;
 
 	xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 
-	console_init(xfb,120,90,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
+	console_init(xfb,120,40,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
 
 	VIDEO_Configure(rmode);
 
@@ -112,10 +120,24 @@ int main(int argc, char **argv) {
 
     int frame_count = cJSON_GetArraySize(frames);
 
-	printf("\x1b[0;0H");
+	cJSON **frame_ptrs = malloc(sizeof(cJSON *) * frame_count);
+	if (frame_ptrs == NULL) {
+		printf("Kann nicht den Frame-Pointer speichern\n");
+		cJSON_Delete(json);
+		return 1;
+	}
+
+	//caching frame in RAM
+	int idx = 0;
+	cJSON *f = NULL;
+	cJSON_ArrayForEach(f, frames) {
+		frame_ptrs[idx++] = f;
+	}
+
+	printf("\x1b[0;0H"); // Home cursor
 	
 	StreamAsciiArgs thread_args = {
-    .frames = frames,
+	.frame_ptrs = frame_ptrs,
     .frame_count = frame_count
 	};
 
@@ -123,6 +145,10 @@ int main(int argc, char **argv) {
 	LWP_CreateThread(&mp3_thread, mp3PlayerThread, NULL, thread_stack2, STACK_SIZE, 50);
 	LWP_SetThreadPriority(mp3_thread, LWP_PRIO_HIGHEST);
 
-	streamAsciiThread(frames, frame_count);
+
+	streamAsciiThread(thread_args.frame_ptrs, frame_count);
+
+	free(frame_ptrs);
+	cJSON_Delete(json);
 	return 0;
 }
