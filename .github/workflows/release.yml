@@ -9,6 +9,9 @@ on:
 env:
   APP_NAME: Wii-Chip
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
