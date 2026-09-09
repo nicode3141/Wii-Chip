@@ -2,7 +2,7 @@
 
 Displays any fromatted json stream as a ASCII video on the WII
 
-![Wii-Chip Demo](https://github.com/nicode3141/Wii-Chip/assets/preview.gif)
+<img src="assets/preview.gif" alt="Wii-Chip Demo" width="300" height="200">
 
 ### Creating own ascii video file
 

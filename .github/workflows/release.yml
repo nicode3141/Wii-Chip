@@ -28,7 +28,7 @@ jobs:
           mkdir -p package/apps/{APP_NAME}
           cp boot.dol package/apps/{APP_NAME}/boot.dol
           cp icon.png package/apps/{APP_NAME}/icon.png
-          cp mata.xml package/apps/{APP_NAME}/meta.xml
+          cp meta.xml package/apps/{APP_NAME}/meta.xml
           cd package
           zip -r ../${APP_NAME}.zip apps
       - name: Upload artifact
