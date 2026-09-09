@@ -56,3 +56,5 @@ dkms.conf
 
 # build dir
 build
+boot.dol
+boot.elf
