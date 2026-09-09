@@ -65,7 +65,6 @@ void streamAsciiThread(cJSON **frame_ptrs, int frame_count) {
 		usleep(1);		
 	}
 
-    return NULL;
 }
 
 void *mp3PlayerThread(void *arg){
