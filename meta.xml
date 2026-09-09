@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+    <name>Wii-Chip</name>
+    <coder>nicode3141</coder>
+    <version>1.0.0</version>
+    <release_date>20260909</release_date>
+    <short_description>The Chip meme in Ascii for your Wii</short_description>
+    <long_description>Rotating Chip / potato chip as a ascii animation. Might be relaxing. Use with caution.</long_description>
+</app>
