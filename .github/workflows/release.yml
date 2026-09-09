@@ -28,10 +28,10 @@ jobs:
           test -f boot.dol || (echo "boot.dol not found" && exit 1)
       - name: Package release
         run: |
-          mkdir -p package/apps/{APP_NAME}
-          cp boot.dol package/apps/{APP_NAME}/boot.dol
-          cp icon.png package/apps/{APP_NAME}/icon.png
-          cp meta.xml package/apps/{APP_NAME}/meta.xml
+          mkdir -p package/apps/${APP_NAME}
+          cp boot.dol package/apps/${APP_NAME}/boot.dol
+          cp icon.png package/apps/${APP_NAME}/icon.png
+          cp meta.xml package/apps/${APP_NAME}/meta.xml
           cd package
           zip -r ../${APP_NAME}.zip apps
       - name: Upload artifact
