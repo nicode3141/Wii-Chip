@@ -1,0 +1,45 @@
+name: build/release wii
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+env:
+  APP_NAME: Wii-Chip
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitppc:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: |
+          make -j$(nproc)
+      - name: Verify build
+        run: |
+          test -f boot.dol || (echo "boot.dol not found" && exit 1)
+      - name: Package release
+        run: |
+          mkdir -p package/apps/{APP_NAME}
+          cp boot.dol package/apps/{APP_NAME}/boot.dol
+          cp icon.png package/apps/{APP_NAME}/icon.png
+          cp mata.xml package/apps/{APP_NAME}/meta.xml
+          cd package
+          zip -r ../${APP_NAME}.zip apps
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{env.APP_NAME}}
+          path: ${{env.APP_NAME}}.zip
+      - name: Create release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v3
+        with:
+          files: ${{env.APP_NAME}}.zip
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
